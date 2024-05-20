@@ -1,6 +1,8 @@
-import java.util.*;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class SubwayMap {
     private Map<String, Map<String, Double>> map;
@@ -46,5 +48,11 @@ public class SubwayMap {
         return transferStations;
     }
 
+    //转字符串便于输出
+    public String toString() {
+        return this.map.values().toString();
+    }
+
+    
     
 }
