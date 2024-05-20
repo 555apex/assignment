@@ -79,6 +79,77 @@ public class SubwayMap {
         }
         return results;
     }
+
+    //辅助函数，获取相连接的站点集合
+    private List<String> getConnectedstations(String station) {
+        List<String> connectedStations = new ArrayList<>();
+
+        for (Map<String, Double> M : map.values()) {
+            // 检查输入的站点是否在当前线路中
+
+            ArrayList<String> stations = new ArrayList<String>();
+            for (String i : M.keySet()) {
+                stations.add(i);
+            }
+
+
+            if (stations.contains(station)) {
+                int index = stations.indexOf(station);
+                if (index > 0) {
+                    connectedStations.add(stations.get(index - 1)); // 添加前一个站点
+                }
+                if (index < stations.size() - 1) {
+                    connectedStations.add(stations.get(index + 1)); // 添加后一个站点
+                }
+            }
+        }
+        return connectedStations;
+    }
+
+    //深度优先算法遍历求解最优路线
+    private void DFSpath(String currentStation, String endStation, Set<String> visited, List<String> currentPath, List<List<String>> allPaths) {
+        visited.add(currentStation);
+        // 如果当前站点是终点站，则将当前路径添加到返回集合中
+        if (currentStation.equals(endStation)) {
+            allPaths.add(new ArrayList<>(currentPath));
+        } else {
+            // 否则遍历当前站点相连的所有站点
+            List<String> connectedStations = getConnectedstations(currentStation);
+            for (String nextStation : connectedStations) {
+                if (!visited.contains(nextStation)) {
+                    currentPath.add(nextStation);
+                    DFSpath(nextStation, endStation, visited, currentPath, allPaths);
+                    currentPath.remove(currentPath.size() - 1); // 回溯
+                }
+            }
+        }
+        visited.remove(currentStation);
+    }
     
-    
+    //第三问，获取某起点站到达某终点站的所有路径
+    public ArrayList<List<String>> findAllPaths(String startStation, String endStation) {
+        ArrayList<List<String>> allPaths = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
+        List<String> currentPath = new ArrayList<>();
+        currentPath.add(startStation);
+        DFSpath(startStation, endStation, visited, currentPath, allPaths);
+        return allPaths;
+    }
+
+    //异常处理，对于不合规的操作的处理
+    public void exceptionHand(){
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("请输入起点站名称：");
+        String startStation = scanner.nextLine();
+        System.out.print("请输入终点站名称：");
+        String endStation = scanner.nextLine();
+
+        List<List<String>> allPaths = this.findAllPaths(startStation, endStation);
+        if (allPaths.isEmpty()) {
+            System.out.println("未找到起点站和终点站之间的路径。");
+        }
+        scanner.close();
+    }
+
 }
