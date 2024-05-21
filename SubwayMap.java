@@ -1,4 +1,8 @@
+
 import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class SubwayMap {
     private Map<String, Map<String, Double>> map;
@@ -17,7 +21,6 @@ public class SubwayMap {
         map.get(lineName).put(stationName, distance);
     }
 
-    //第一问：获取所有中转站
     public Set<String> getTransferStations() {
         Map<String, Set<String>> stationLines = new HashMap<>();
         for (String line : map.keySet()) {
@@ -25,7 +28,7 @@ public class SubwayMap {
                 stationLines.putIfAbsent(station, new HashSet<>());
                 stationLines.get(station).add(line);
             }
-        }//找出路线上的交集元素
+        }
 
         Set<String> transferStations = new HashSet<>();
         for (String station : stationLines.keySet()) {
@@ -35,7 +38,7 @@ public class SubwayMap {
                 for (String line : stationLines.get(station)) {
                     sb.append(line).append(" 号线、");
                 }
-                sb.setLength(sb.length() - 1); // 删除最后的逗号
+                sb.setLength(sb.length() - 1); // Remove the last comma
                 sb.append(">>");
                 transferStations.add(sb.toString());
             }
@@ -44,35 +47,40 @@ public class SubwayMap {
         return transferStations;
     }
 
-    //图转字符串形式便于输出
+
     public String toString() {
         return this.map.values().toString();
     }
 
-    //第二问：输入某一站点，输出线路距离小于 n 的所有站点集合
     public List<String> findStationsWithinDistance(String station, int distance) {
-        List<String> results = new ArrayList<>();        
+        List<String> results = new ArrayList<>();
+        // 遍历每一条地铁线路
         List<String> Line = new ArrayList<>();
-        int t = 0;
         for (String i : map.keySet()) {
             Line.add(i);
-        }// 遍历每一条地铁线路
+        }
+        int t = 0;
         for (Map<String, Double> M : map.values()) {
             // 检查输入的站点是否在当前线路中
+
             String line = Line.get(t);
             ArrayList<String> stations = new ArrayList<String>();
             for (String i : M.keySet()) {
                 stations.add(i);
             }
 
+
             if (stations.contains(station)) {
+
+
                 int index = stations.indexOf(station);
                 // 在站点前后遍历以找到与输入站点相隔 `n` 站以内的所有站点
                 for (int i = Math.max(0, index - distance); i <= Math.min(stations.size() - 1, index + distance); i++) {
                     // 计算相隔的站点数量
                     int distanceFromStation = Math.abs(i - index);
+                    // 构建结果字符串并添加到结果列表中
+
                     results.add("<<" + stations.get(i) + "," + line + "号线" + "," + distanceFromStation + ">>");
-                    //按题目要求表达
                 }
             }
             t = t + 1;
@@ -80,8 +88,37 @@ public class SubwayMap {
         return results;
     }
 
-    //辅助函数，获取相连接的站点集合
-    private List<String> getConnectedstations(String station) {
+
+    public ArrayList<List<String>> findAllPaths(String startStation, String endStation) {
+        ArrayList<List<String>> allPaths = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
+        List<String> currentPath = new ArrayList<>();
+        currentPath.add(startStation);
+        findAllPathsDFS(startStation, endStation, visited, currentPath, allPaths);
+        return allPaths;
+    }
+
+    private void findAllPathsDFS(String currentStation, String endStation, Set<String> visited, List<String> currentPath, List<List<String>> allPaths) {
+        visited.add(currentStation);
+        // 如果当前站点是终点站，则将当前路径添加到结果集中
+        if (currentStation.equals(endStation)) {
+            allPaths.add(new ArrayList<>(currentPath));
+            System.out.println(currentPath);
+        } else {
+            // 否则，遍历当前站点相连的所有站点
+            List<String> connectedStations = getConnectedStations(currentStation);
+            for (String nextStation : connectedStations) {
+                if (!visited.contains(nextStation)) {
+                    currentPath.add(nextStation);
+                    findAllPathsDFS(nextStation, endStation, visited, currentPath, allPaths);
+                    currentPath.remove(currentPath.size() - 1); // 回溯
+                }
+            }
+        }
+        visited.remove(currentStation);
+    }
+
+    private List<String> getConnectedStations(String station) {
         List<String> connectedStations = new ArrayList<>();
 
         for (Map<String, Double> M : map.values()) {
@@ -106,39 +143,7 @@ public class SubwayMap {
         return connectedStations;
     }
 
-    //深度优先算法遍历求解最优路线
-    private void DFSpath(String currentStation, String endStation, Set<String> visited, List<String> currentPath, List<List<String>> allPaths) {
-        visited.add(currentStation);
-        // 如果当前站点是终点站，则将当前路径添加到返回集合中
-        if (currentStation.equals(endStation)) {
-            allPaths.add(new ArrayList<>(currentPath));
-        } else {
-            // 否则遍历当前站点相连的所有站点
-            List<String> connectedStations = getConnectedstations(currentStation);
-            for (String nextStation : connectedStations) {
-                if (!visited.contains(nextStation)) {
-                    currentPath.add(nextStation);
-                    DFSpath(nextStation, endStation, visited, currentPath, allPaths);
-                    currentPath.remove(currentPath.size() - 1); // 回溯
-                }
-            }
-        }
-        visited.remove(currentStation);
-    }
-    
-    //第三问，获取某起点站到达某终点站的所有路径
-    public ArrayList<List<String>> findAllPaths(String startStation, String endStation) {
-        ArrayList<List<String>> allPaths = new ArrayList<>();
-        Set<String> visited = new HashSet<>();
-        List<String> currentPath = new ArrayList<>();
-        currentPath.add(startStation);
-        DFSpath(startStation, endStation, visited, currentPath, allPaths);
-        return allPaths;
-    }
-
-    //异常处理，对于不合规的操作的处理
-    //后续又继续在次此基础上完善了所有的测试功能
-    public void exceptionHand(){
+    public void test3() {
         Scanner scanner = new Scanner(System.in);
 
         System.out.print("请输入起点站名称：");
@@ -149,53 +154,43 @@ public class SubwayMap {
         List<List<String>> allPaths = this.findAllPaths(startStation, endStation);
         if (allPaths.isEmpty()) {
             System.out.println("未找到起点站和终点站之间的路径。");
-        }
-        else {
+        } else {
             System.out.println(startStation + "到" + endStation + "的路径如上");
         }
-            ArrayList<Double> distances = new ArrayList<Double>();
-            for (List<String> path : allPaths) {
-                distances.add(this.getpathdistance((ArrayList<String>) path));
-            }
-            double shortestdistance = this.shortestdistance(distances);
-            int indix = distances.indexOf(shortestdistance);
-            ArrayList<String> shortestestpath = (ArrayList<String>) allPaths.get(indix);
-            System.out.println("最短路径为：");
-            System.out.println(shortestestpath);
-            System.out.println("最短距离为");
-            System.out.println(shortestdistance);
-            System.out.print("请输入你选择的路线：");
-            int linenumber = scanner.nextInt();
-            this.showpath((ArrayList<String>) allPaths.get(linenumber));
-
-            System.out.println("距离为" + distances.get(linenumber));
-            System.out.println("请选择你的支付方式");
-            String payway = scanner.next();
-            if (payway.equals("单程票")) {
-                System.out.println("您选择单程票支付");
-                onewayTicket onewayticket = new onewayTicket();
-                System.out.println("价格为" + onewayticket.getfare(distances.get(linenumber)));
-            }
-            if (payway.equals("武汉通")) {
-                System.out.println("您选择武汉通支付");
-                wuhanMetrotong wuhantong = new wuhanMetrotong();
-                System.out.println("价格为" + wuhantong.getfare(distances.get(linenumber)));
-            }
-            if (payway.equals("定期票")) {
-                System.out.println("您选择定期票支付");
-                System.out.println("价格为" + 0);
-            }
-        scanner.close();
-    }
-
-    public Double getpathdistance (ArrayList < String > list) {
-        Double d = (double) 0;
-        for (int i = 0; i < list.toArray().length - 1; i++) {
-            d = d + this.Connnecteddistance(list.get(i), list.get(i + 1));
-
-
+        ArrayList<Double> distances = new ArrayList<Double>();
+        for (List<String> path : allPaths) {
+            distances.add(this.getpathdistance((ArrayList<String>) path));
         }
-        return d;
+        double shortestdistance = this.shortestdistance(distances);
+        int indix = distances.indexOf(shortestdistance);
+        ArrayList<String> shortestestpath = (ArrayList<String>) allPaths.get(indix);
+        System.out.println("最短路径为：");
+        System.out.println(shortestestpath);
+        System.out.println("最短距离为");
+        System.out.println(shortestdistance);
+        System.out.print("请输入你选择的路线：");
+        int linenumber = scanner.nextInt();
+        this.showpath((ArrayList<String>) allPaths.get(linenumber));
+
+        System.out.println("距离为" + distances.get(linenumber));
+        System.out.println("请选择你的支付方式");
+        String payway = scanner.next();
+        if (payway.equals("单程票")) {
+            System.out.println("您选择单程票支付");
+            onewayTicket onewayticket = new onewayTicket();
+            System.out.println("价格为" + onewayticket.getfare(distances.get(linenumber)));
+        }
+        if (payway.equals("武汉通")) {
+            System.out.println("您选择武汉通支付");
+            wuhanMetrotong wuhantong = new wuhanMetrotong();
+            System.out.println("价格为" + wuhantong.getfare(distances.get(linenumber)));
+        }
+        if (payway.equals("定期票")) {
+            System.out.println("您选择定期票支付");
+            System.out.println("价格为" + 0);
+        }
+        scanner.close();
+
     }
 
     public double Connnecteddistance (String s1, String s2){
@@ -227,6 +222,16 @@ public class SubwayMap {
             }
         }
         return distance;
+    }
+
+    public Double getpathdistance (ArrayList < String > list) {
+        Double d = (double) 0;
+        for (int i = 0; i < list.toArray().length - 1; i++) {
+            d = d + this.Connnecteddistance(list.get(i), list.get(i + 1));
+
+
+        }
+        return d;
     }
 
     public Double shortestdistance (ArrayList < Double > list) {
@@ -266,13 +271,12 @@ public class SubwayMap {
         return nowline;
 
     }
-
     public void showpath (ArrayList < String > path)
     {
         String firststation = path.get(0);
         String laststation = path.get(path.toArray().length - 1);
         String firstline = this.getline(path.get(0), path.get(1));
-        System.out.println("从" + firststation + "出发" + "延" + firstline + "号线");
+        System.out.println("从" + firststation + "出发" + "沿" + firstline + "号线");
         for (int i = 1; i < path.toArray().length - 1; i++) {
             String previouspath = this.getline(path.get(i - 1), path.get(i));
             String nowpath = this.getline(path.get(i), path.get(i + 1));
@@ -286,4 +290,24 @@ public class SubwayMap {
 
     }
 
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
