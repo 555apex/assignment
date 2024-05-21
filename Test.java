@@ -25,12 +25,11 @@ public class Test {
                     subwayMap.addStation(currentLine, station1, distance);
                     subwayMap.addStation(currentLine, station2, distance);
                 }
-
-
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }//异常处理机制初始化
+
         System.out.println(subwayMap);
         Set<String> transferStations = subwayMap.getTransferStations();
         System.out.println("Transfer Stations:");
@@ -39,7 +38,7 @@ public class Test {
         }
         List<String> l1 = subwayMap.findStationsWithinDistance("江汉路", 5);
         System.out.println(l1);
-        subwayMap.test3();
+        subwayMap.functionalTest();
     }
 }
 
